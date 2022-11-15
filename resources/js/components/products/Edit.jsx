@@ -1,73 +1,113 @@
 import axios from 'axios'
-import React, { useState } from 'react'
-import { useNavigate, Link } from "react-router-dom"
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams, Link } from "react-router-dom"
 
-const New = () => {
+const Edit = () => {
 
   const navigate = useNavigate()
 
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [photo, setPhoto] = useState("/upload/placeholder.jpg")
-  const [type, setType] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [price, setPrice] = useState("")
+  const { id } = useParams()
+
+   const [name, setName] = useState("");
+   const [description, setDescription] = useState("");
+   const [photo, setPhoto] = useState(null);
+   const [type, setType] = useState("");
+   const [quantity, setQuantity] = useState("");
+   const [price, setPrice] = useState("");
+   const [avatar, setAvatar] = useState(true)
+
+//   console.log(id)
+
+  useEffect(() => {
+      getProducts();
+  }, []);
+
+  const getProducts = async () => {
+    await axios.get(`/api/get_edit_product/${id}`)
+    .then(({ data }) => {
+        // console.log('data', data);
+        const { name, description, photo, type, quantity, price } = data.product
+
+        setName(name)
+        setDescription(description);
+        setPhoto(photo);
+        setType(type);
+        setQuantity(quantity);
+        setPrice(price);
+    })
+    .catch(({ response: { data }}) => {
+        console.log(response)
+    })
+  }
+
+  const ourImage = (img) => {
+    return "/upload/" + img;
+  }
 
   const changeHandler = (e) => {
-    let file = e.target.files[0]
-    let reader = new FileReader()
-    let limit = 1024 * 1024 * 2
-    if (file['size'] > limit) {
-        Swal.fire({
-            type: 'error',
-            title: 'Oops...',
-            text: 'Something went wrong',
-            footer: 'Why do I have this issue?'
-        })
-    }
-    reader.onloadend = (file) => {
-        setPhoto(reader.result)
-    }
-    reader.readAsDataURL(file)
+      let file = e.target.files[0];
+      let limit = 1024 * 1024 * 2;
+      if (file["size"] > limit) {
+          Swal.fire({
+              type: "error",
+              title: "Oops...",
+              text: "Something went wrong",
+              footer: "Why do I have this issue?",
+          });
+      } else {
+        let reader = new FileReader();
+        reader.onload = e => {
+            setAvatar(false)
+            setPhoto(e.target.result)
+        }
+        reader.readAsDataURL(file)
+      }
+      
   }
 
-  const createProduct = async (e) => {
+  const updateProduct = async (e) => {
     e.preventDefault()
 
-    const formData = new FormData()
+    const formData = new FormData();
 
-    formData.append('name', name)
+    formData.append("name", name);
     formData.append("description", description);
-    formData.append('photo', photo)
-    formData.append('type', type)
-    formData.append('quantity', quantity)
-    formData.append('price', price)
+    formData.append("photo", photo);
+    formData.append("type", type);
+    formData.append("quantity", quantity);
+    formData.append("price", price);
 
-    await axios.post("/api/add_product/", formData)
-    .then(({data}) => {
-        toast.fire({
-            icon: "success",
-            title: "Product added successfully!"
+    await axios.post(`/api/update_product/${id}`, formData)
+        .then((data) => {
+            toast.fire({
+                icon: 'success',
+                title: 'Product updated!'
+            })
+            navigate("/")
         })
-        navigate("/")
-    })
-    .catch(({response}) => {
-        console.log(response);
-    })
+        .catch((error) => {
+            console.log(error);
+        })
   }
+
+ 
 
   return (
       <div className="container">
-          <button className="btn" onClick={(event) => createProduct(event)}>
-              <Link to="/">Go Back</Link>
-          </button>
-          <div className="products_create">
+          <div className="product_edit">
               <div className="titlebar">
                   <div className="titlebar_item">
-                      <h1>Add Product</h1>
+                      <h1>Edit Product</h1>
                   </div>
                   <div className="titlebar_item">
-                      <button className="btn">Save</button>
+                      <button
+                          className="btn"
+                          onClick={(event) => {
+                              updateProduct(event);
+                          }}
+                      >
+                          Update
+                      </button>
                   </div>
               </div>
 
@@ -95,12 +135,21 @@ const New = () => {
                               <ul className="images_list">
                                   <li className="image_item">
                                       <div className="image_item-imgWrapper">
-                                          <img
-                                              src={photo}
-                                              alt="Product Image"
-                                              width="115px"
-                                              height="100px"
-                                          />
+                                          {avatar === true ? (
+                                              <img
+                                                  src={ourImage(photo)}
+                                                  alt="Product Image"
+                                                  width="115px"
+                                                  height="100px"
+                                              />
+                                          ) : (
+                                              <img
+                                                  src={photo}
+                                                  alt="Product Image"
+                                                  width="115px"
+                                                  height="100px"
+                                              />
+                                          )}
                                       </div>
                                   </li>
                                   <li className="image_item">
@@ -154,9 +203,11 @@ const New = () => {
                   <div className="titlebar_item">
                       <button
                           className="btn"
-                          onClick={(event) => createProduct(event)}
+                          onClick={(event) => {
+                              updateProduct(event);
+                          }}
                       >
-                          Save
+                          Update
                       </button>
                   </div>
               </div>
@@ -165,4 +216,4 @@ const New = () => {
   );
 }
 
-export default New
+export default Edit

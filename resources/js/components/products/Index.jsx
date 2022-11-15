@@ -1,10 +1,12 @@
 import axios from 'axios'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const Index = () => {
 
   const navigate = useNavigate()
+
+  const [products, setProducts] = useState([])
 
   const newProduct = () => {
     navigate("/product/new")
@@ -12,14 +14,48 @@ const Index = () => {
 
   useEffect(() => {
     getProducts()
-  })
+  }, [])
 
   const getProducts = async () => {
     await axios.get("/api/get_all_product")
         .then(({data}) => {
-            console.log('data', data)
+            console.log('data', data);
+            
+            setProducts(data.products);
         })
   }
+
+  const editProduct = (id) => {
+    navigate("/product/edit/" + id)
+  }
+
+   const deleteProduct = async (id) => {
+       Swal.fire({
+           title: "Are you sure?",
+           text: "You can't reverse this!",
+           icon: "warning",
+           showCancelButton: true,
+           confirmButtonColor: "#3085d6",
+           cancelButtonColor: "#d33",
+           confirmButtonText: "Yes, delete it!",
+       }).then((result) => {
+           if (result.isConfirmed) {
+               axios
+                   .get(`/api/delete_product/${id}`)
+                   .then(() => {
+                       Swal.fire(
+                           "Deleted!",
+                           "Product successfully deleted",
+                           "success"
+                       );
+                       getProducts();
+                   })
+                   .catch((error) => {
+                       console.log(error);
+                   });
+           }
+       });
+   };
 
   return (
       <div className="container">
@@ -30,7 +66,7 @@ const Index = () => {
                   </div>
                   <div className="titlebar_item">
                       <div className="btn" onClick={() => newProduct()}>
-                        Add Product
+                          Add Product
                       </div>
                   </div>
               </div>
@@ -43,20 +79,23 @@ const Index = () => {
                       <p>Inventory</p>
                       <p>Actions</p>
                   </div>
-                  <div className="list_items">
-                      <img src="" height="40px" />
-                      <p>Product name</p>
-                      <p>Category</p>
-                      <p>50</p>
-                      <div>
-                          <button className="btn-icon success">
-                              <i className="fa fa-pencil-alt"></i>
-                          </button>
-                          <button className="btn-icon danger">
-                              <i className="far fa-trash-alt"></i>
-                          </button>
-                      </div>
-                  </div>
+                  {products.length > 0 &&
+                      products.map((product, key) => (
+                          <div className="list_items" key={key}>
+                              <img src={`/upload/${product.photo}`} height="40px" />
+                              <p>{product.name}</p>
+                              <p>{product.type}</p>
+                              <p>{product.quantity}</p>
+                              <div style={{display: 'flex', gap: '10px'}}>
+                                  <button className="btn-icon success" onClick={() => editProduct(product.id)}>
+                                      <i className="fa fa-pencil-alt"></i>
+                                  </button>
+                                  <button className="btn-icon danger" onClick={() => deleteProduct(product.id)}>
+                                      <i className="far fa-trash-alt"></i>
+                                  </button>
+                              </div>
+                          </div>
+                      ))}
               </div>
           </div>
       </div>

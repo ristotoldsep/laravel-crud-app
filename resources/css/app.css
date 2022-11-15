@@ -53,6 +53,7 @@ body {
     border: 1px solid #e0e0e0;
     padding: 20px 30px 30px 30px;
     margin-top: 20px;
+    align-items: center;
 }
 
 .list_items {
@@ -61,7 +62,15 @@ body {
     display: grid;
     grid-template-columns: 60px 1fr 120px 120px 120px;
     border-bottom: 1px solid #e0e0e0;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
     color: white;
+    transition: all .5s ease;
+    align-items: center;
+}
+
+.list_items:hover {
+    background: #000;
 }
 
 .btn-icon {
