@@ -1,4 +1,5 @@
-import React from 'react'
+import axios from 'axios'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const Index = () => {
@@ -6,7 +7,18 @@ const Index = () => {
   const navigate = useNavigate()
 
   const newProduct = () => {
-    navigate("product/new")
+    navigate("/product/new")
+  }
+
+  useEffect(() => {
+    getProducts()
+  })
+
+  const getProducts = async () => {
+    await axios.get("/api/get_all_product")
+        .then(({data}) => {
+            console.log('data', data)
+        })
   }
 
   return (
@@ -33,7 +45,7 @@ const Index = () => {
                   </div>
                   <div className="list_items">
                       <img src="" height="40px" />
-                      <a>Product name</a>
+                      <p>Product name</p>
                       <p>Category</p>
                       <p>50</p>
                       <div>

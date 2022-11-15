@@ -52,7 +52,7 @@ const New = () => {
         navigate("/")
     })
     .catch(({response}) => {
-
+        console.log(response);
     })
   }
 
